@@ -1,18 +1,12 @@
-rbc = new robot_class;
+rbc = robot_class('EV3LL');
 isTouched = rbc.touched;
 if (isTouched == 1) 
-    %motors move 90 right
-    %move forward
-    if (isTouched == 1)
-        %motors move 180
-        %move forward
-        if (isTouched == 1)
-            %motors move 90 left
-            %move forward
-        end
-    else
-        %move forward
-    end
+    %right turn
+    rbc.driveEncodAlt(290,-290,30);
+    
+    %move foward
+    rbc.driveEncodComp(obj, 300)
+    
 else
-    %move forward
+    rbc.driveEncodComp(obj, 300)  
 end
