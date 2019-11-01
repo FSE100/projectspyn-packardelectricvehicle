@@ -1,4 +1,7 @@
-classdef robot_class
+classdef robot_class < handle
+	%Diagram for port layout
+        %A = Left Motor, D = Right Motor, C = Arm Motor
+	%1 = Color Sensor, 3 = GyroScope, 4 = Touch Sensor	
     properties
         ev3
         ev3_name
@@ -57,12 +60,42 @@ classdef robot_class
             end
             obj.ev3.StopMotor('AD')
         end
+
+	%1 is forward, -1 is back, -.5 is left turn, .5 is right turn, 0 is nothing
+	function passVal = runDriveCommands(obj, commandList)
+		for command = commandList
+			switch command
+				case 1
+				obj.DriveEncodComp(200);
+				case -1
+				obj.DriveEncodComp(-200);
+				case -.5
+				obj.DriveEncodAlt(-290,290,30);
+				case .5
+				obj.DiveEncodAlt(290,-290,30);
+				otherwise
+				disp("Inncorrect Value")
+		passVal = 0;
+			end
+		end
+	end
+
+
+
         function passVal = driveEncod(obj,distance, speed)
             obj.ev3.ResetMotorAngle('AD');
             obj.ev3.MoveMotorAngleRel('AD', speed, distance, 'Brake');
             obj.ev3.WaitForMotor('A');
             passVal = 0;
         end
+
+	function pass val = driveEncodComp(obj,distance)
+	    obj.ev3.ResetMotorAngle('AD');
+	    obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');
+	    obj.ev3.MoveMotorAngleRel('D',50,distance,'Brake');
+	    obj.ev3.WaitForMotor('A');
+	    passVal = 0;
+	end
         
         function passVal = driveEncodAlt(obj,leftDis, rightDis,speed)
             obj.ev3.ResetMotorAngle('AD');
