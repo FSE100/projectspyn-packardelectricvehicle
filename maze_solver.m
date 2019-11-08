@@ -5,6 +5,7 @@ classdef maze_solver
         mazeWidth %for tracking position
         colorTracker %instance of colorTracker
         currentObj = "pickup" %options are 'pickup' or 'dropoff'
+        starting
     end
     methods
         function obj = maze_solver(robot_class, width, height)
@@ -43,12 +44,18 @@ classdef maze_solver
         
         function val = determine_action(obj)
            if (obj.robot.getTouchedVal() == 1)
-               obj.robot.stopDrive();
+            obj.robot.stopDrive();
             obj.robot.driveEncodComp(-300*2);
+            if obj.robot.getUltrasonicVal() > 25
             obj.robot.driveEncodAlt(290,-290,30);
+            else
+                obj.robot.driveEncodAlt(-290,290,30);
+            end
+            
+            
             obj.robot.driveEncodComp(300*4);     
            else
-               obj.robot.driveMotors(47,50);
+               obj.robot.driveMotors(50,50);
            end
             val = 0;
         end

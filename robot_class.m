@@ -31,7 +31,8 @@ classdef robot_class < handle
         function angle = getAngPos(obj)
             angle = obj.ev3.GyroAngle(3);
         end
-        %simply returns the ultrasonic value in the default units
+        %simply returns the ultrasonic value in the default units %25 units
+        %is distance when centered from a wall
         function ultraVal = getUltrasonicVal(obj)
             dis = obj.ev3.UltrasonicDist(2);
             if (dis > 0)
@@ -86,15 +87,23 @@ classdef robot_class < handle
     %same as above but fixed speeds and are adjusted so that the robot
     %travels as straight as possible.
 	function passVal = driveEncodComp(obj,distance)
-        if 1
+            aTicks = obj.ev3.motorGetCount('A');
             obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');
             obj.ev3.MoveMotorAngleRel('D',50,distance,'Brake');
-            obj.ev3.WaitForMotor('A');
+            error = aTicks+distance-obj.ev3.motorGetCount('A');
             passVal = 0;
-        else
+            while (abs(error) > 20)
+                if  obj.getTouchedVal() ==1
+                    passVal = obj.ev3.motorGetCount('A')- aTicks;     
+                    break;
+              
+                end
+               error = aTicks+distance-obj.ev3.motorGetCount('A');
+            end
+            obj.stopDrive();
+            if (passVal ~= 0)                
             passVal = -1;
-        end
-	    
+            end
     end
         
     %This method allows for different distances for each motor, this is
@@ -121,7 +130,7 @@ classdef robot_class < handle
             obj.ev3 = ConnectBrick(robot_name);
             obj.ev3_name = robot_name;
             obj.ev3.StopMotor('AD');
-            obj.ev3.resetAllMotorsAngle();
+            %obj.ev3.resetAllMotorsAngle();
             obj.ev3.GyroCalibrate(3);
         end
         %An emergency stop for the drive Subsystem.

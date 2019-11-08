@@ -5,11 +5,12 @@ a = robot_class('EV3LL');
 
 while 1
     pause(.1);
-    display (a.getTouchedVal())
+    %display (a.getTouchedVal())
+    display(a.getUltrasonicVal());
     %print(key)
     switch key
         case 'uparrow'
-            a.driveMotors(47,50);
+            a.driveEncodComp(800);
         case 'downarrow'
             a.driveMotors(-47,-50);
         case 'leftarrow'

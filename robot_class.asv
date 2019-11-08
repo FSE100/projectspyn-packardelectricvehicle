@@ -5,13 +5,18 @@
 classdef robot_class < handle
 	%Diagram for port layout
         %A = Left Motor, D = Right Motor, C = Arm Motor
-	%1 = Color Sensor, 3 = GyroScope, 4 = Touch Sensor	
+	%1 = Color Sensor, 2 = UltraSonic, 3 = GyroScope, 4 = Touch Sensor	
     properties
         ev3 %ev3 object
         ev3_name %ev3 modules named.
+        state %states for movement, 'f','b','l','r','sc' - sc = stop due to color
     end
     methods
         %simply returns a boolean value for whether the given touch sensor
+        
+        function val = resetAllMotorsAngle(obj)
+             obj.ev3.ResetMotorAngle('ADC');
+        end
         function touched = getTouchedVal(obj)
             touched = obj.ev3.TouchPressed(4);
         end
@@ -45,43 +50,26 @@ classdef robot_class < handle
                 colorVal = -1;
             end
         end 
-        
-        %null gyroscope output for whatever reason. needs to be resolved.
-        function passVal = turnPos(obj, angle, speed)
-            obj.ev3.StopMotor('AD');
-            obj.ev3.GyroCalibrate(3);
-            pause(2)
-            error = (angle+str2double(obj.ev3.GyroAngle(3)))-str2double(obj.ev3.GyroAngle(3));
-            if (error > 0)
-                obj.ev3.MoveMotor('A',speed)
-                obj.ev3.MoveMotor('D', -speed)
-            else
-                obj.ev3.MoveMotor('A',-speed)
-                obj.ev3.MoveMotor('D', speed)
-            end
-             error = (angle+str2double(obj.ev3.GyroAngle(3)))-str2double(obj.ev3.GyroAngle(3));
-            display(error)
-            %startTime = clock(5)
-            while (abs(error) > 3 )%&& clock(5) < startTime+5)
-                print(error)
-                error = angle-obj.ev3.GyroAngle(3);
-            end
-            obj.ev3.StopMotor('AD')
-        end
-
 	%1 is forward, -1 is back, -.5 is left turn, .5 is right turn, 0 is nothing
 	function passVal = runDriveCommands(obj, commandList)
 		for command = commandList
 			switch command
 				case 1
-				obj.DriveEncodComp(200);
+                obj.state = 'f';
+				obj.driveEncodComp(200);
 				case -1
-				obj.DriveEncodComp(-200);
+				obj.driveEncodComp(-200);
+                obj.state = 'b';
 				case -.5
-				obj.DriveEncodAlt(-290,290,30);
+				obj.driveEncodAlt(-290,290,30);
+                obj.state = 'l';
 				case .5
-				obj.DiveEncodAlt(290,-290,30);
-                
+				obj.driveEncodAlt(290,-290,30);
+                obj.state = 'r';
+                case 1.5
+                    obj.setArmToPosAbs(10);
+                case -1.5
+                    obj.setArmToPosAbs(-10);
 				otherwise
 				disp("Inncorrect Value")
 		passVal = 0;
@@ -91,7 +79,6 @@ classdef robot_class < handle
     %This function is a basic driveEncoder method, does not compensate for
     %differences in the motors
         function passVal = driveEncod(obj,distance, speed)
-            obj.ev3.ResetMotorAngle('AD');
             obj.ev3.MoveMotorAngleRel('AD', speed, distance, 'Brake');
             obj.ev3.WaitForMotor('A');
             passVal = 0;
@@ -99,20 +86,42 @@ classdef robot_class < handle
     %same as above but fixed speeds and are adjusted so that the robot
     %travels as straight as possible.
 	function passVal = driveEncodComp(obj,distance)
-	    obj.ev3.ResetMotorAngle('AD');
-	    obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');
-	    obj.ev3.MoveMotorAngleRel('D',50,distance,'Brake');
-	    obj.ev3.WaitForMotor('A');
-	    passVal = 0;
+        if 1
+            aTicks = obj.ev3.motorGetCount('A');
+            dTicks = obj.ev3.motorGetCount('D');
+            obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');
+            obj.ev3.MoveMotorAngleRel('D',50,distance,'Brake');
+            error = aTicks+distance-obj.ev3.motorGetCount('A');
+            
+            while (abs(error) > 20)
+                if  obj.getTouchedVal() ==1
+                    
+                end
+                en
+                    
+                
+            
+            
+            obj.ev3.WaitForMotor('A');
+            passVal = 0;
+        else
+            passVal = -1;
+        end
+	    
     end
         
     %This method allows for different distances for each motor, this is
     %used for encoder based turning.
         function passVal = driveEncodAlt(obj,leftDis, rightDis,speed)
-            obj.ev3.ResetMotorAngle('AD');
-            obj.ev3.MoveMotorAngleRel('A', speed,leftDis, 'Brake');
-            obj.ev3.MoveMotorAngleRel('D', speed,rightDis, 'Brake');
-            obj.ev3.WaitForMotor('A');
+            if 1
+                obj.ev3.ResetMotorAngle('AD');
+                obj.ev3.MoveMotorAngleRel('A', speed,leftDis, 'Brake');
+                obj.ev3.MoveMotorAngleRel('D', speed,rightDis, 'Brake');
+                obj.ev3.WaitForMotor('A');
+                passVal = 0;
+            else
+               passVal = -1;
+            end
         end
         
         %This method is simple have motors go a certain speed.
@@ -125,11 +134,13 @@ classdef robot_class < handle
             obj.ev3 = ConnectBrick(robot_name);
             obj.ev3_name = robot_name;
             obj.ev3.StopMotor('AD');
+            obj.ev3.resetAllMotorsAngle();
             obj.ev3.GyroCalibrate(3);
         end
         %An emergency stop for the drive Subsystem.
         function passVal = stopDrive(obj)
             obj.ev3.StopMotor('AD');
+           % obj.state = 'sc';
         end
         
         %This method has the arm motor go to a certain position at a set
