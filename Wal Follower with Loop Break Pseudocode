@@ -1,0 +1,28 @@
+i = 0;
+while (The car is either not on the pickup color or drop-off color)
+    
+    %Move Forward until hitting a wall
+    
+	%Set a variable "dist(i)" equal to the ticks taken to hit the wall
+    dist(i) = ticksMoved;
+    
+        if 
+            The US Sensor detects a wall to the left, turn right
+            
+        else
+            turn left
+            
+        end
+	
+	if the most recent variable "dist(i)" == dist(i-4)
+		%If the variable match, turn 180 degrees, travel half "dist(i)", 
+        then take any possible turn
+        If i > 3
+        %Turn right twice
+        %Travel (dist(i)/2) ticks
+        %Take either a left or right turn
+    end
+    %increment i
+    i = i + 1;
+end
+%Repeat
