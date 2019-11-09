@@ -34,10 +34,7 @@ classdef robot_class < handle
         %simply returns the ultrasonic value in the default units %25 units
         %is distance when centered from a wall
         function ultraVal = getUltrasonicVal(obj)
-            dis = obj.ev3.UltrasonicDist(2);
-            if (dis > 0)
-              ultraVal = dis;
-            end
+            ultraVal = obj.ev3.UltrasonicDist(2);
         end
         
         %-1 = fault, 0 =nocolor, 1 = black, 2= blue, 3 = green, 4= yellow
@@ -90,20 +87,10 @@ classdef robot_class < handle
             aTicks = obj.ev3.motorGetCount('A');
             obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');
             obj.ev3.MoveMotorAngleRel('D',50,distance,'Brake');
-            error = aTicks+distance-obj.ev3.motorGetCount('A');
-            passVal = 0;
-            while (abs(error) > 20)
-                if  obj.getTouchedVal() ==1
-                    passVal = obj.ev3.motorGetCount('A')- aTicks;     
-                    break;
-              
-                end
-               error = aTicks+distance-obj.ev3.motorGetCount('A');
-            end
+            obj.ev3.WaitForMotor('A');
             obj.stopDrive();
-            if (passVal ~= 0)                
-            passVal = -1;
-            end
+            passVal = 0;
+    
     end
         
     %This method allows for different distances for each motor, this is
