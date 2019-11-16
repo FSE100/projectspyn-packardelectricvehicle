@@ -5,8 +5,9 @@ a = robot_class('EV3LL');
 
 while 1
     pause(.1);
+    display (a.getColorRGB())
     %display (a.getTouchedVal())
-    display(a.getUltrasonicVal());
+    %display(a.getUltrasonicVal());
     %print(key)
     switch key
         case 'uparrow'

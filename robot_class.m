@@ -5,7 +5,7 @@
 classdef robot_class < handle
 	%Diagram for port layout
         %A = Left Motor, D = Right Motor, C = Arm Motor
-	%1 = Color Sensor, 2 = UltraSonic, 3 = GyroScope, 4 = Touch Sensor	
+	%1 = Color Sensor, 2 = UltraSonic, 3 = Touch Sensor Right, 4 = Touch Sensor Left
     properties
         ev3 %ev3 object
         ev3_name %ev3 modules named.
@@ -48,6 +48,11 @@ classdef robot_class < handle
                 colorVal = -1;
             end
         end 
+        
+        function color = getColorRGB(obj)
+            obj.ev3.SetColorMode(4,1);
+            color = obj.ev3.ColorRGB(1);
+        end
 	%1 is forward, -1 is back, -.5 is left turn, .5 is right turn, 0 is nothing
 	function passVal = runDriveCommands(obj, commandList)
 		for command = commandList
