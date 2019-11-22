@@ -4,7 +4,7 @@ pause on
 
 commands = [1 .5 1 1 -.5];
 
-determine_action2(robot);
+determine_action_priority_turn(a)
 
 function val = tele_control(a)
     global key
@@ -36,11 +36,11 @@ function val = tele_control(a)
             endq
     end
 CloseKeyboard();
+    end
 end
 
 function val = decide_color_action(color_code, robot)
     disp ("in decide function_for color")
-    
     %if (((color_code(1) > 34) && (color_code(3) < 12 && color_code(2) <12)) || color_code(2) > 12 || color_code(3) > 12) 
     if (color_code == 5)
         disp("red detected")
@@ -55,7 +55,60 @@ function val = decide_color_action(color_code, robot)
    % end
 end
 
-function val = determine_action2(robot)
+
+
+
+function val = decide_color_action_alt(color_code, color_rgb, robot)
+    disp ("in decide function alt")
+    
+    if (color_code == 5)
+        disp("red detected")
+        robot.stopDrive();
+        pause(5);
+        robot.driveEncodComp(300);
+    else if (color_code ==3)
+            if (color_rgb(2) > color_rgb(3))
+                tele_control(a);
+            else
+                drop_off(a);
+
+%prioritizes turning always
+function val = determine_action_priority_turn(robot)
+    aInit = robot.ev3.GetMotorAngle('A');
+    past_dis = [];
+    i = 0;
+    while (1)
+     color = robot.getColor();
+     %color = robot.getColor();
+     disp(color);
+     %color2 = robot.getColorRGB();
+    
+     decide_color_action(color,robot);
+        
+     ultra_val = robot.getUltrasonicVal();
+     
+     if (ultra_val < 55)
+         disp("Turn Right")
+         robot.stopDrive();
+         robot.driveEncodComp(-200);
+         robot.driveEncodAlt(290+100,-290-100,30);
+         robot.driveEncodComp(200);
+     elseif (robot.getTouchedVal() == 1)
+             disp("Turning left")
+             robot.stopDrive();
+             robot.driveEncodComp(-200);
+             robot.driveEncodAlt(-290-100,290+100,30);
+             robot.driveEncodComp(200);
+     else
+         disp("going straight")
+         robot.driveMotors(55,50);
+     end
+        
+    end
+end
+
+
+function val = determine_action_priority_straight(robot)
     aInit = robot.ev3.GetMotorAngle('A');
     past_dis = [];
     i = 0;
@@ -90,26 +143,3 @@ function val = determine_action2(robot)
         
     end
 end
-
-function val = determine_action(robot)
-            %display(robot.getTouchedVal())
-           if (robot.getTouchedVal() == 1)
-            robot.stopDrive();
-            ultraVal2 = robot.getUltrasonicVal();
-            robot.driveEncodComp(-300*2);
-           
-            disp(ultraVal2)
-            if ultraVal2 < 50
-            disp("Turning right")
-                robot.driveEncodAlt(290+100,-290-100,30);
-            
-            else
-                disp("Turning left")
-                robot.driveEncodAlt(-290-100,290+100,30);
-            end
-           else
-               robot.driveMotors(55,50);
-           end
-            val = 0;
-end
-
