@@ -9,7 +9,7 @@ classdef robot_class < handle
     properties
         ev3 %ev3 object
         ev3_name %ev3 modules named.
-        state %states for movement, 'f','b','l','r','sc' - sc = stop due to color
+        state %states for movement, m = move, s = stop, p = picked up
     end
     methods
         %simply returns a boolean value for whether the given touch sensor
@@ -19,6 +19,13 @@ classdef robot_class < handle
         end
         function touched = getTouchedVal(obj)
             touched = obj.ev3.TouchPressed(4);
+        end
+        
+        function check_color(obj)
+            if (obj.getColor() == 5)
+                pause(5);
+                obj.stopDrive();
+            end
         end
         
         %away to gracefully disconnect from the robot. Should be done at
@@ -40,7 +47,7 @@ classdef robot_class < handle
         %-1 = fault, 0 =nocolor, 1 = black, 2= blue, 3 = green, 4= yellow
         %5 = red, 6 = white, 7 = brown
         function colorVal = getColor(obj)
-            obj.ev3.SetColorMode(2,1);
+            %obj.ev3.SetColorMode(2,1);
             color = obj.ev3.ColorCode(1);
             if color > 0
                 colorVal = color;
@@ -49,11 +56,16 @@ classdef robot_class < handle
             end
         end 
         
+        function mode = changeColorMode(obj, mode)
+            obj.ev3.SetColorMode(mode,1);
+        end
+        
         function color = getColorRGB(obj)
             obj.ev3.SetColorMode(4,1);
             color = obj.ev3.ColorRGB(1);
         end
-	%1 is forward, -1 is back, -.5 is left turn, .5 is right turn, 0 is nothing
+	%1 is forward, -1 is back, -.5 is left turn, .5 is right turn, 0 is
+	%nothing, 1.5 is raise arm by ten ticks, -1.5 is lower arm by 10
 	function passVal = runDriveCommands(obj, commandList)
 		for command = commandList
 			switch command
@@ -88,6 +100,23 @@ classdef robot_class < handle
         end
     %same as above but fixed speeds and are adjusted so that the robot
     %travels as straight as possible.
+    
+    function driveEncodCompCus(obj,distance)
+        aTicks = obj.ev3.motorGetCount('A');
+        disp(aTicks)
+        error = distance+aTicks - obj.ev3.motorGetCount('A');
+        disp(error)
+       % obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');
+        %obj.ev3.MoveMotorAngleRel('D',50,distance,'Brake');
+        while (abs(error) > 100)
+            obj.check_color();
+            obj.driveMotors(47,50);
+            disp(error)
+            error = distance+aTicks - obj.ev3.motorGetCount('A');
+        end
+        obj.stopDrive();
+    end
+    
 	function passVal = driveEncodComp(obj,distance)
             aTicks = obj.ev3.motorGetCount('A');
             obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');
@@ -122,6 +151,7 @@ classdef robot_class < handle
             obj.ev3 = ConnectBrick(robot_name);
             obj.ev3_name = robot_name;
             obj.ev3.StopMotor('AD');
+            obj.state = "m";
             %obj.ev3.resetAllMotorsAngle();
             obj.ev3.GyroCalibrate(3);
         end

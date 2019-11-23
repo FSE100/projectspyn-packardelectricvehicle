@@ -5,7 +5,7 @@ determine_action_priority_turn(robot)
 
 
 function val = drop_off(a)
-    commands = [-.5 -.5 -.5 -1 -1 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 1 1 1];
+    commands = [-1 -1 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 1 1 1];
     a.stopDrive();
     a.runDriveCommands(commands);
 end
@@ -23,7 +23,7 @@ function val = tele_control(a)
         case 'leftarrow'
             a.driveEncodAlt(-50,50,30);
         case 'rightarrow'
-            a.driveEncodAlt(50,-50,30);
+            a.driveEncodAlt(50,-100,30);
         case 0
             a.driveMotors(0,0);
         case 'q'
@@ -72,7 +72,6 @@ function val = decide_color_action_code(color_code, robot)
         robot.stopDrive();
         tele_control(robot);
         robot.state = "p";
-        val = true;
     elseif (color_code == 2 && robot.state == "p")
         disp("blue detected");
         robot.stopDrive();
@@ -102,32 +101,26 @@ end
 function val = determine_action_priority_turn(robot)
     robot.changeColorMode(2);
     pri_turn = 0;
-    ignore_color = false;
-    while (robot.state == "m" || robot.state == "p")
+    while (robot.state == "m" || robot.state == "p")q
      color = robot.getColor();
      disp(color);
     
-     if (ignore_color == false)
-     value = decide_color_action_code(color,robot);
-     if (value == true)
-     ignore_color =  true;
-     end
-     
-     end
+     decide_color_action_code(color,robot);
+        
      ultra_val = robot.getUltrasonicVal();
      
      if (ultra_val > 55)
          disp("Turn Left")
          robot.stopDrive();
          robot.driveEncodComp(800);
-         robot.driveEncodAlt(-290-40,290+40,30);
+         robot.driveEncodAlt(-290-70,290+70,30);
          pri_turn = pri_turn +1;
          robot.driveEncodComp(800);
      elseif (robot.getTouchedVal() == 1)
              disp("Turning Right")
              robot.stopDrive();
              robot.driveEncodComp(-200);
-             robot.driveEncodAlt(290+40,-290-40,30);
+             robot.driveEncodAlt(290+50,-290-50,30);
              robot.driveEncodComp(200);
              pri_turn = pri_turn +1;
      else
