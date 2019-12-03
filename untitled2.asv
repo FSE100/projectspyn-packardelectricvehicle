@@ -1,8 +1,0 @@
-classdef maze_solver
-    properties
-        robot_class %robot_object
-        mazeHeight %for tracking position
-        mazeWidth %for tracking position
-    end
-    
-end

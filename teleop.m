@@ -1,3 +1,6 @@
+%Test Teleop Class
+%Ignore for Repo Evaluation
+
 global key
 InitKeyboard();
 

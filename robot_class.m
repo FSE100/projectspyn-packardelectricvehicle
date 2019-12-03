@@ -20,9 +20,12 @@ classdef robot_class < handle
         function touched = getTouchedVal(obj)
             touched = obj.ev3.TouchPressed(4);
         end
-        
+       
+        %a method that pauses the robot for five second
+        %used in the custom encoder drive method
         function check_color(obj)
             if (obj.getColor() == 5)
+                obj.stopDrive();
                 pause(5);
                 obj.stopDrive();
             end
@@ -56,6 +59,7 @@ classdef robot_class < handle
             end
         end 
         
+        %changes the color detection Mode for the color sensor
         function mode = changeColorMode(obj, mode)
             obj.ev3.SetColorMode(mode,1);
         end
@@ -101,6 +105,10 @@ classdef robot_class < handle
     %same as above but fixed speeds and are adjusted so that the robot
     %travels as straight as possible.
     
+    %This method is a custom drive motors with encoders method
+    %It is deprecated but it has the potential to be checking for color
+    %changes while driving the motors, but due to lack of time could not be
+    %finely tuned.
     function driveEncodCompCus(obj,distance)
         aTicks = obj.ev3.motorGetCount('A');
         disp(aTicks)
@@ -117,6 +125,8 @@ classdef robot_class < handle
         obj.stopDrive();
     end
     
+    %A Drive encoder method that has custom power methods to attempt to
+    %curve the drift that exists with our drive train.
 	function passVal = driveEncodComp(obj,distance)
             aTicks = obj.ev3.motorGetCount('A');
             obj.ev3.MoveMotorAngleRel('A', 47, distance,'Brake');

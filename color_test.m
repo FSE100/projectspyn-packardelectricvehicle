@@ -1,3 +1,6 @@
+%Color Sensor Testing Method
+%Ignore for Repo Evaluation
+
 a = robot_class('EV3LL');
 pause on;
 cont_loop = true;

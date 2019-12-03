@@ -1,3 +1,7 @@
+%Deprecated Maze Solving class
+%Was not used because pointers are semi-broken in Matlab when used with
+%Robot Class
+%Ignore for Repo Evaluation
 classdef maze_solver < handle
     properties
         robot %robot_object

@@ -1,3 +1,5 @@
+%Test Touch sensor Method
+%Ignore for Repo Evaluation
 rbc = robot_class('EV3LL');
 isTouched = rbc.touched;
 
