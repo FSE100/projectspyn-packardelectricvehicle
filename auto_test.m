@@ -16,6 +16,14 @@ function val = drop_off(a)
     a.runDriveCommands(commands);
 end
 
+%pickup method effectively reverse of the above method.
+function pickup(a)
+    commands = [-.5 -.5 -.5 -1 -1 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1 -1 -1 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1 1 1 1 1 1 1 1 1];
+    a.stopDrive();
+    a.runDriveCommands(commands);
+end
+
+
 %the manual control method:
 %Effectively it creates a window and begins to accept keyboard control to
 %move the robot
@@ -80,7 +88,8 @@ function val = decide_color_action_code(color_code, robot)
     elseif (color_code == 3)
         disp("green detected");        
         robot.stopDrive();
-        tele_control(robot);
+        pickup(robot);
+        %tele_control(robot);
         robot.state = "p";
         val = true;
     elseif (color_code == 2 && robot.state == "p")
@@ -133,7 +142,7 @@ function val = determine_action_priority_turn(robot)
         disp(color);
     
         %check to see if any color actions are required.
-        decide_color_action_code_no_auto(color, robot);
+        decide_color_action_code(color, robot);
      
      %stores ultrasonic value
         ultra_val = robot.getUltrasonicVal();
